@@ -36,8 +36,8 @@ $(document).ready(function () {
 
     //var ws_url = 'ws' + document.location.origin.substring(4);
 
-	//var ws_url = "ws://192.168.59.103:8888";
-	var ws_url = "ws://jupyter-kernel.odewahn.com:8888";
+	var ws_url = "ws://192.168.59.103:8888";
+	//var ws_url = "ws://jupyter-kernel.odewahn.com:8888";
 
     kernel._kernel_started({kernel_id: '1', ws_url: ws_url});
     var thecell = new IPython.CodeCell(kernel);

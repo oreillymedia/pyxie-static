@@ -1,4 +1,6 @@
+This is a simple example of how to include an IPython notebook code cell into a static site.  It requires a [kernel server](https://github.com/oreillymedia/jupyter-kernel) to process the code.  The ultimate goal is to make a plugin like this:
 
+<img src="images/jupyter-plugin.png"/>
 
 ## Start the notebook kernel server in Docker
 
