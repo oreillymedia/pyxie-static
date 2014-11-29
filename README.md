@@ -4,17 +4,24 @@ This is a simple example of how to include an IPython notebook code cell into a 
 
 ## Start the notebook kernel server in Docker
 
-Run this on the command line
+Note that you'll need to build the 
 
 ```
-docker run 8888:8888 oreillymedia/pyxie-kernel /bin/bash
+docker run -p 8888:8888 oreillymedia/pyxie-kernel ./go.sh
 ```
 
-Once it launches, start the server:
 
+## Set the location of the kernel
+
+Once the kernel starts, you'll need to specify where it is by changing a hardcoded value:
+
+```javascript
+var ws_url = "ws://192.168.59.103:8888";
+
+//var ws_url = "ws://jupyter-kernel.odewahn.com:8888";
 ```
-python kernel-server.py
-```
+
+The goal is to eventually have a kernel started on a remote server via [tmpnb](https://github.com/jupyter/tmpnb), but for now it's pretty manual.
 
 ## Run a static server locally
 
@@ -29,16 +36,6 @@ Then try to get the remote kernel to execute stuff you type into the box...
 
 ## To Do
 
-### In Docker
-
-* Remove the static app stuff from the repo entirely to just leave the kernel stuff
-* Make a docker image that can auto-resart
-* Host on something like Deis?  
-* Explore how to get other kernels going
-* How to add other Kernels (especially something like Go or Julia), or switch kernels?  
-
-
-### In the web app
 
 * Add restart kernel button, and a "halt" button
 * Map the JS module to the new container (i.e., replace the hardcoded value in var ws_url = "ws://192.168.59.103:8000"; )
