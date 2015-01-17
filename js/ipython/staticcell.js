@@ -9,47 +9,66 @@
 // On document ready
 //============================================================================
 
+/**
+ *
+ *
+ * @module Staticcell
+ * @namespace staticcell
+ * @class Staticcell
+ */
 
-$(document).ready(function () {
+define([
+    'base/js/namespace',
+    'jquery',
+    'base/js/utils',
+    'base/js/keyboard',
+    'services/config',
+    'notebook/js/cell',
+    'notebook/js/outputarea',
+    'notebook/js/completer',
+    'notebook/js/celltoolbar',
+    'codemirror/lib/codemirror',
+    'codemirror/mode/python/python',
+    'notebook/js/codemirror-ipython'
+], function(IPython,
+    $,
+    utils,
+    keyboard,
+    configmod,
+    cell,
+    outputarea,
+    completer,
+    celltoolbar,
+    CodeMirror,
+    cmpython,
+    cmip
+    ) {
+    "use strict";
 
-    // monkey patch CM to be able to syntax highlight cell magics
-    // bug reported upstream,
-    // see https://github.com/marijnh/CodeMirror2/issues/670
+    console.log("Loading stuff!");
 
-    if(CodeMirror.getMode(1,'text/plain').indent == undefined ){
-        console.log('patching CM for undefined indent');
-        CodeMirror.modes.null = function() { return {token: function(stream) {stream.skipToEnd();},indent : function(){return 0}}}
-        }
+    var Staticcell = function () {};
 
-    CodeMirror.patchedGetMode = function(config, mode){
-            var cmmode = CodeMirror.getMode(config, mode);
-            if(cmmode.indent == null)
-            {
-                console.log('patch mode "' , mode, '" on the fly');
-                cmmode.indent = function(){return 0};
-            }
-            return cmmode;
-        }
-    // end monkey patching CodeMirror
     IPython.tooltip = new IPython.Tooltip()
+	
+	// Hokey creation of a kernel object
+	var k = new IPython.Kernel("", "", IPython.notebook);
 
+	// This kernel can be located anywhere
+	k.ws_url = 'ws://jupyter-kernel.odewahn.com:16384'
 
-    var kernel = new IPython.Kernel('/kernels');
+	// Using the full path provided on launch
+	k.kernel_id = "c9a7cbf7-67d9-4f42-8d98-f20173a584e7"
+	k.kernel_url = "/api/kernels/" + k.kernel_id
 
-    //var ws_url = 'ws' + document.location.origin.substring(4);
-
-	var ws_url = "ws://192.168.59.103:8888";
-	//var ws_url = "ws://jupyter-kernel.odewahn.com:8888";
-
-    kernel._kernel_started({kernel_id: '1', ws_url: ws_url});
-    var thecell = new IPython.CodeCell(kernel);
+	k.start_channels()
+	
+    var thecell = new IPython.CodeCell(k);
     $("div#thecell").append(thecell.element);
     // set some example input
     thecell.set_text(	
         "%pylab inline\n\n" + 
-
         "x = np.linspace(0, 10)\n\n" + 
-
         "plt.plot(x, np.sin(x), x, np.cos(x))\n\n"
     );
     // focus the cell
@@ -67,15 +86,17 @@ $(document).ready(function () {
             return true;
         }
         if (event.which === key.ENTER && event.shiftKey) {
-            thecell.execute();
+            k.execute(thecell.get_text());
             return false;
         }
     });
     $("a#restart").click(function() {
-        kernel.restart();
+        k.restart();
     })
     $("a#interrupt").click(function() {
-        kernel.interrupt();
+        k.interrupt();
     })
+
+
 });
 

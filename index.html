@@ -14,55 +14,74 @@
   <link rel="stylesheet" href="http://cdn.oreilly.com/tools/ipython/ipython/css/codemirror-ipython.css">
 
   <link rel="stylesheet" href="http://cdn.oreilly.com/tools/ipython/css/style.css">
+
+
+
+  <script src="/js/ipython/components/es6-promise/promise.min.js?v=f004a16cb856e0ff11781d01ec5ca8fe" type="text/javascript" charset="utf-8"></script>
+  <script src="/js/ipython/components/requirejs/require.js?v=640929dac3c23a448d2eebc37bc32062" type="text/javascript" charset="utf-8"></script>
+
+
+  <script>
+    require.config({
+        
+        urlArgs: "v=20150114074955",
+        
+        baseUrl: '/js/ipython/',
+        paths: {
+          nbextensions : '/nbextensions',
+          kernelspecs : '/kernelspecs',
+          underscore : 'components/underscore/underscore-min',
+          backbone : 'components/backbone/backbone-min',
+          jquery: 'components/jquery/jquery.min',
+          bootstrap: 'components/bootstrap/js/bootstrap.min',
+          bootstraptour: 'components/bootstrap-tour/build/js/bootstrap-tour.min',
+          jqueryui: 'components/jquery-ui/ui/minified/jquery-ui.min',
+          moment: 'components/moment/moment',
+          codemirror: 'components/codemirror',
+          termjs: 'components/term.js/src/term'
+        },
+        shim: {
+          underscore: {
+            exports: '_'
+          },
+          backbone: {
+            deps: ["underscore", "jquery"],
+            exports: "Backbone"
+          },
+          bootstrap: {
+            deps: ["jquery"],
+            exports: "bootstrap"
+          },
+          bootstraptour: {
+            deps: ["bootstrap"],
+            exports: "Tour"
+          },
+          jqueryui: {
+            deps: ["jquery"],
+            exports: "$"
+          }
+        }
+    });
+
+  </script>
+
+
+<!-- Our own js, for setting up our single-cell server -->
+
+
+
   
 </head>
-<body>
+
+<body data-project="" data-base-url="/" data-ws-url="">
 	
    Put your code here:
 
    <div style="margin-left: 100px; width: 80%" id="thecell"></div>
 
 
+<script src="/js/ipython/staticcell.js?v=40206d35fd1fa88a93709da496c15cb9" charset="utf-8"></script>
 
-
- 
-<script src="http://cdn.oreilly.com/tools/ipython/codemirror/lib/codemirror.js" charset="utf-8"></script>
-<script src="http://cdn.oreilly.com/tools/ipython/codemirror/lib/util/loadmode.js" charset="utf-8"></script>
-<script src="http://cdn.oreilly.com/tools/ipython/codemirror/lib/util/multiplex.js" charset="utf-8"></script>
-<script src="http://cdn.oreilly.com/tools/ipython/codemirror/mode/python/python.js" charset="utf-8"></script>
-
-
-<script src="https://code.jquery.com/jquery-1.11.2.min.js" charset="utf-8"></script>
-<script src="https://code.jquery.com/ui/1.11.2/jquery-ui.min.js" charset="utf-8"></script>
-
-
-<!-- NEW STUFF -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.15/require.min.js" charset="utf-8"></script>
-
-
-
-
-<!-- IPython basics -->
-<script src="./js/ipython/notebook/namespace.js" type="text/javascript" charset="utf-8"></script>
-<script src="./js/ipython/notebook/utils.js" type="text/javascript" charset="utf-8"></script>
-<script src="./js/ipython/notebook/events.js" type="text/javascript" charset="utf-8"></script>
-
-<!-- IPython Kernel -->
-<script src="./js/ipython/services/kernel.js" type="text/javascript" charset="utf-8"></script>
-<script src="./js/ipython/services/config.js" type="text/javascript" charset="utf-8"></script>
-
-<!-- Cell and OutputArea -->
-<script src="./js/ipython/notebook/outputarea.js" type="text/javascript" charset="utf-8"></script>
-<script src="./js/ipython/notebook/cell.js" type="text/javascript" charset="utf-8"></script>
-<script src="./js/ipython/notebook/codecell.js" type="text/javascript" charset="utf-8"></script>
-
-<!-- these are required by CodeCell, but really shouldn't be -->
-<script src="./js/ipython/notebook/completer.js" type="text/javascript" charset="utf-8"></script>
-<script src="./js/ipython/notebook/tooltip.js" type="text/javascript" charset="utf-8"></script>
-<script src="./js/ipython/notebook/celltoolbar.js" type="text/javascript" charset="utf-8"></script>
-
-<!-- Our own js, for setting up our single-cell server -->
-<script src="./js/staticcell.js" type="text/javascript" charset="utf-8"></script>
 
 </body>
 </html>
