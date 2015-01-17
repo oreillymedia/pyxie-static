@@ -1,27 +1,42 @@
-This is a simple example of how to include an IPython notebook code cell into a static site.  It requires a [kernel server](https://github.com/oreillymedia/jupyter-kernel) to process the code.  The ultimate goal is to make a plugin like this:
+This is a simple example of how to include an IPython 3.0 notebook kernel widget into a static site.  
 
-<img src="images/jupyter-plugin.png"/>
+## Install the submodule
 
-## Start the notebook kernel server in Docker
-
-Note that you'll need to build the 
+The repo has the following submodule:
 
 ```
-docker run -p 8888:8888 oreillymedia/pyxie-kernel ./go.sh
+git submodule add https://github.com/ipython/ipython-components.git js/ipython/components
 ```
 
+When you clone the repo, you need to do the following steps to pull down the submodule:
 
-## Set the location of the kernel
-
-Once the kernel starts, you'll need to specify where it is by changing a hardcoded value:
-
-```javascript
-var ws_url = "ws://192.168.59.103:8888";
-
-//var ws_url = "ws://jupyter-kernel.odewahn.com:8888";
+```
+$ git submodule init
+$ git submodule update
 ```
 
-The goal is to eventually have a kernel started on a remote server via [tmpnb](https://github.com/jupyter/tmpnb), but for now it's pretty manual.
+## Start a kernel server
+
+Next, you need to start an instance of the [kernel-service](https://github.com/rgbkrk/kernels-service).  The simplest way to do this is via Docker:
+
+```
+$ docker run -it -p 8888:8888 odewahn/kernels-service
+```
+
+Assuming you're running `boot2docker`, you can see the kernel ID by doing this:
+
+```
+$ curl http://192.168.59.103:8888/api/kernels
+[{"id": "ffec3251-db76-4140-a019-273abc6fd4f3", "name": "python3"}]
+```
+
+On linux, do this:
+
+```
+$ curl http://127.0.0.1/api/kernels
+[{"id": "ffec3251-db76-4140-a019-273abc6fd4f3", "name": "python3"}]
+```
+
 
 ## Run a static server locally
 
