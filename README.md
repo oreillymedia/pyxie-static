@@ -2,22 +2,29 @@ This is a simple example of how to include an IPython 3.0 notebook kernel widget
 
 ## Install the submodule
 
-The repo has the following submodule:
-
-```
-git submodule add https://github.com/ipython/ipython-components.git js/ipython/components
-```
-
-When you clone the repo, you need to do the following steps to pull down the submodule:
+The repo uses the submodule `https://github.com/ipython/ipython-components.git js/ipython/components`.  So, when you clone the repo, you need to do the following steps to pull down the submodule:
 
 ```
 $ git submodule init
 $ git submodule update
 ```
 
+## Run a static server locally
+
+Then run a static page server on localhost, like this:
+
+```
+python -m SimpleHTTPServer
+```
+
+Then try to get the remote kernel to execute stuff you type into the box...
+
+
 ## Start a kernel server
 
-Next, you need to start an instance of the [kernel-service](https://github.com/rgbkrk/kernels-service).  The simplest way to do this is via Docker:
+By default, this is running against a little kernel playground. 
+
+But, if you want to run this against a local kernel, here's what you can do. You'll need Docker.  First, start an instance of the [kernel-service](https://github.com/rgbkrk/kernels-service).  The simplest way to do this is via Docker:
 
 ```
 $ docker run -it -p 8888:8888 odewahn/kernels-service
@@ -38,15 +45,6 @@ $ curl http://127.0.0.1/api/kernels
 ```
 
 
-## Run a static server locally
-
-Then run a static page server on localhost, like this:
-
-```
-python -m SimpleHTTPServer
-```
-
-Then try to get the remote kernel to execute stuff you type into the box...
 
 
 ## To Do
