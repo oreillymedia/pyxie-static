@@ -43,16 +43,3 @@ On linux, do this:
 $ curl http://127.0.0.1/api/kernels
 [{"id": "ffec3251-db76-4140-a019-273abc6fd4f3", "name": "python3"}]
 ```
-
-
-
-
-## To Do
-
-
-* Add restart kernel button, and a "halt" button
-* Map the JS module to the new container (i.e., replace the hardcoded value in var ws_url = "ws://192.168.59.103:8000"; )
-* Add a "Run" button to the codemirror cells
-* Make it work with multiple samples, just like the other plugins
-* Add a  "Powered by Jupyter" logo in the header or footer
-
