@@ -5,8 +5,7 @@ This is a simple example of how to include an IPython 3.0 notebook kernel widget
 The repo uses the submodule `https://github.com/ipython/ipython-components.git js/ipython/components`.  So, when you clone the repo, you need to do the following steps to pull down the submodule:
 
 ```
-$ git submodule init
-$ git submodule update
+$ git submodule update --init
 ```
 
 ## Run a static server locally
