@@ -11,7 +11,7 @@ define([
 ], function(IPython, $, CodeMirror, moment){
     "use strict";
     
-    IPython.load_extensions = function () {
+    var load_extensions = function () {
         // load one or more IPython notebook extensions with requirejs
         
         var extensions = [];
@@ -38,6 +38,22 @@ define([
             }
         );
     };
+    
+    IPython.load_extensions = load_extensions;
+
+    /**
+     * Wait for a config section to load, and then load the extensions specified
+     * in a 'load_extensions' key inside it.
+     */
+    function load_extensions_from_config(section) {
+        section.loaded.then(function() {
+            if (section.data.load_extensions) {
+                var nbextension_paths = Object.getOwnPropertyNames(
+                                            section.data.load_extensions);
+                load_extensions.apply(this, nbextension_paths);
+            }
+        });
+    }
 
     //============================================================================
     // Cross-browser RegEx Split
@@ -467,7 +483,10 @@ define([
          * we should never have any encoded URLs anywhere else in code
          * until we are building an actual request
          */
-        return decodeURIComponent($('body').data(key));
+        var val = $('body').data(key);
+        if (!val)
+            return val;
+        return decodeURIComponent(val);
     };
     
     var to_absolute_cursor_pos = function (cm, cursor) {
@@ -488,11 +507,12 @@ define([
         /**
          * turn absolute cursor postion into CodeMirror col, ch cursor
          */
-        var i, line;
+        var i, line, next_line;
         var offset = 0;
-        for (i = 0, line=cm.getLine(i); line !== undefined; i++, line=cm.getLine(i)) {
-            if (offset + line.length < cursor_pos) {
-                offset += line.length + 1;
+        for (i = 0, next_line=cm.getLine(i); next_line !== undefined; i++, next_line=cm.getLine(i)) {
+            line = next_line;
+            if (offset + next_line.length < cursor_pos) {
+                offset += next_line.length + 1;
             } else {
                 return {
                     line : i,
@@ -502,8 +522,8 @@ define([
         }
         // reached end, return endpoint
         return {
-            ch : line.length - 1,
             line : i - 1,
+            ch : line.length - 1,
         };
     };
     
@@ -822,6 +842,8 @@ define([
     };
     
     var utils = {
+        load_extensions: load_extensions,
+        load_extensions_from_config: load_extensions_from_config,
         regex_split : regex_split,
         uuid : uuid,
         fixConsole : fixConsole,

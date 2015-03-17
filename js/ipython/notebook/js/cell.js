@@ -21,7 +21,22 @@ define([
 ], function(IPython, $, utils, CodeMirror, cm_match, cm_closeb, cm_comment) {
     // TODO: remove IPython dependency here 
     "use strict";
-
+    
+    var overlayHack = CodeMirror.scrollbarModel.native.prototype.overlayHack;
+    
+    CodeMirror.scrollbarModel.native.prototype.overlayHack = function () {
+        overlayHack.apply(this, arguments);
+        // Reverse `min-height: 18px` scrollbar hack on OS X
+        // which causes a dead area, making it impossible to click on the last line
+        // when there is horizontal scrolling to do and the "show scrollbar only when scrolling" behavior
+        // is enabled.
+        // This, in turn, has the undesirable behavior of never showing the horizontal scrollbar,
+        // even when it should, which is less problematic, at least.
+        if (/Mac/.test(navigator.platform)) {
+            this.horiz.style.minHeight = "";
+        }
+    };
+    
     var Cell = function (options) {
         /* Constructor
          *
@@ -360,6 +375,12 @@ define([
             return false;
         }
     };
+
+    Cell.prototype.ensure_focused = function() {
+        if(this.element !== document.activeElement && !this.code_mirror.hasFocus()){
+            this.focus_cell();
+        }
+    }
     
     /**
      * Focus the cell in the DOM sense
@@ -551,8 +572,17 @@ define([
             var regs = modes[mode].reg;
             // only one key every time but regexp can't be keys...
             for(var i=0; i<regs.length; i++) {
-                // here we handle non magic_modes
-                if(first_line.match(regs[i]) !== null) {
+                // here we handle non magic_modes.
+                // TODO :
+                // On 3.0 and below, these things were regex.
+                // But now should be string for json-able config. 
+                // We should get rid of assuming they might be already 
+                // in a later version of IPython. 
+                var re = regs[i];
+                if(typeof(re) === 'string'){
+                    re = new RegExp(re) 
+                }
+                if(first_line.match(re) !== null) {
                     if(current_mode == mode){
                         return;
                     }

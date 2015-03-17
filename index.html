@@ -6,28 +6,33 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <title>Static Cell Server</title>
   <meta name="author" content="Min RK">
-  <link rel="stylesheet" href="http://cdn.oreilly.com/tools/ipython/ipython/css/style.min.css" type="text/css"/>
+<!--   <link rel="stylesheet" href="http://cdn.oreilly.com/tools/ipython/ipython/css/style.min.css" type="text/css"/>
   <link rel="stylesheet" href="http://cdn.oreilly.com/tools/ipython/bootstrap/css/bootstrap.min.css" media="screen">
   <link rel="stylesheet" href="http://cdn.oreilly.com/tools/ipython/bootstrap/css/bootstrap-responsive.min.css">
   
   <link rel="stylesheet" href="http://cdn.oreilly.com/tools/ipython/codemirror/lib/codemirror.css">
   <link rel="stylesheet" href="http://cdn.oreilly.com/tools/ipython/ipython/css/codemirror-ipython.css">
 
-  <link rel="stylesheet" href="http://cdn.oreilly.com/tools/ipython/css/style.css">
+  <link rel="stylesheet" href="http://cdn.oreilly.com/tools/ipython/css/style.css"> -->
 
 
 
-  <script src="/js/ipython/components/es6-promise/promise.min.js?v=f004a16cb856e0ff11781d01ec5ca8fe" type="text/javascript" charset="utf-8"></script>
+  <!-- // <script src="/js/ipython/components/es6-promise/promise.min.js?v=f004a16cb856e0ff11781d01ec5ca8fe" type="text/javascript" charset="utf-8"></script> -->
+  <!-- // <script src="/js/ipython/extensions/MathJax.js" type="text/javascript" charset="utf-8"></script> -->
   <script src="/js/ipython/components/requirejs/require.js?v=640929dac3c23a448d2eebc37bc32062" type="text/javascript" charset="utf-8"></script>
 
 
   <script>
+  console.log('hello!')
+  window.mathjax_url = "" // so the mathjax warning doesn't show up
+
     require.config({
         
         urlArgs: "v=20150114074955",
         
         baseUrl: '/js/ipython/',
         paths: {
+          contents : '/js/ipython/services/contents',
           nbextensions : '/nbextensions',
           kernelspecs : '/kernelspecs',
           underscore : 'components/underscore/underscore-min',
@@ -63,10 +68,18 @@
         }
     });
 
+
+    requirejs(['atlas_ipython'], function(atlas_ipython){
+
+    });
+
+    // requirejs(['jquery'], function(jquery){
+    //   console.log('yo', jquery); 
+    // });
+
   </script>
 
 
-<!-- Our own js, for setting up our single-cell server -->
 
 
 
@@ -74,13 +87,11 @@
 </head>
 
 <body data-project="" data-base-url="/" data-ws-url="">
-	
+	<!-- <div id="notebook"></div> -->
    Put your code here:
 
-   <div style="margin-left: 100px; width: 80%" id="thecell"></div>
+  <div style="margin-left: 100px; width: 80%" id="thecell"></div>
 
-
-<script src="/js/ipython/staticcell.js?v=40206d35fd1fa88a93709da496c15cb9" charset="utf-8"></script>
 
 
 </body>

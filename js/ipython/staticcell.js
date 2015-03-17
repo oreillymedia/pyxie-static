@@ -19,6 +19,7 @@
 
 define([
     'base/js/namespace',
+    // 'notebook/namespace',
     'jquery',
     'base/js/utils',
     'base/js/keyboard',
@@ -74,28 +75,29 @@ define([
     // focus the cell
     thecell.select();
     
-    $(document).keydown(function (event) {
-        var key = IPython.utils.keycodes;
+    // $(document).keydown(function (event) {
+    //     var key = IPython.utils.keycodes;
         
-        if (event.which === key.ESC) {
-            // Intercept escape at highest level to avoid closing
-            // websocket connection with firefox
-            event.preventDefault();
-        } else if (event.which === key.SHIFT) {
-            // ignore shift keydown
-            return true;
-        }
-        if (event.which === key.ENTER && event.shiftKey) {
-            k.execute(thecell.get_text());
-            return false;
-        }
-    });
-    $("a#restart").click(function() {
-        k.restart();
-    })
-    $("a#interrupt").click(function() {
-        k.interrupt();
-    })
+    //     if (event.which === key.ESC) {
+    //         // Intercept escape at highest level to avoid closing
+    //         // websocket connection with firefox
+    //         event.preventDefault();
+    //     } else if (event.which === key.SHIFT) {
+    //         // ignore shift keydown
+    //         return true;
+    //     }
+    //     if (event.which === key.ENTER && event.shiftKey) {
+    //         k.execute(thecell.get_text());
+    //         return false;
+    //     }
+    // });
+    
+    // $("a#restart").click(function() {
+    //     k.restart();
+    // })
+    // $("a#interrupt").click(function() {
+    //     k.interrupt();
+    // })
 
 
 });

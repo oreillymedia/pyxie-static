@@ -97,22 +97,6 @@ define([
         this.input_prompt_number = null;
         this.celltoolbar = null;
         this.output_area = null;
-        // Keep a stack of the 'active' output areas (where active means the 
-        // output area that recieves output).  When a user activates an output
-        // area, it gets pushed to the stack.  Then, when the output area is
-        // deactivated, it's popped from the stack.  When the stack is empty,
-        // the cell's output area is used.
-        this.active_output_areas = [];
-        var that = this;
-        Object.defineProperty(this, 'active_output_area', {
-            get: function() {
-                if (that.active_output_areas && that.active_output_areas.length > 0) {
-                    return that.active_output_areas[that.active_output_areas.length-1];
-                } else {
-                    return that.output_area;
-                }
-            },
-        });
 
         this.last_msg_id = null;
         this.completer = null;
@@ -126,6 +110,7 @@ define([
 
         // Attributes we want to override in this subclass.
         this.cell_type = "code";
+        var that  = this;
         this.element.focusout(
             function() { that.auto_highlight(); }
         );
@@ -142,46 +127,30 @@ define([
             },
             mode: 'ipython',
             theme: 'ipython',
-            matchBrackets: true
-        }
-    };
-
-    CodeCell.config_defaults = {
+            matchBrackets: true,
+            autoCloseBrackets: true
+        },
         highlight_modes : {
-            'magic_javascript'    :{'reg':[/^%%javascript/]},
-            'magic_perl'          :{'reg':[/^%%perl/]},
-            'magic_ruby'          :{'reg':[/^%%ruby/]},
-            'magic_python'        :{'reg':[/^%%python3?/]},
-            'magic_shell'         :{'reg':[/^%%bash/]},
-            'magic_r'             :{'reg':[/^%%R/]},
-            'magic_text/x-cython' :{'reg':[/^%%cython/]},
+            'magic_javascript'    :{'reg':['^%%javascript']},
+            'magic_perl'          :{'reg':['^%%perl']},
+            'magic_ruby'          :{'reg':['^%%ruby']},
+            'magic_python'        :{'reg':['^%%python3?']},
+            'magic_shell'         :{'reg':['^%%bash']},
+            'magic_r'             :{'reg':['^%%R']},
+            'magic_text/x-cython' :{'reg':['^%%cython']},
         },
     };
+
+    CodeCell.config_defaults = CodeCell.options_default;
 
     CodeCell.msg_cells = {};
 
     CodeCell.prototype = Object.create(Cell.prototype);
-
-    /**
-     * @method push_output_area
-     */
-    CodeCell.prototype.push_output_area = function (output_area) {
-        this.active_output_areas.push(output_area);
-    };
-
-    /**
-     * @method pop_output_area
-     */
-    CodeCell.prototype.pop_output_area = function (output_area) {
-        var index = this.active_output_areas.lastIndexOf(output_area);
-        if (index > -1) {
-            this.active_output_areas.splice(index, 1);
-        }
-    };
-
+    
     /** @method create_element */
     CodeCell.prototype.create_element = function () {
         Cell.prototype.create_element.apply(this, arguments);
+        var that = this;
 
         var cell =  $('<div></div>').addClass('cell code_cell');
         cell.attr('tabindex','2');
@@ -194,7 +163,14 @@ define([
             notebook: this.notebook});
         inner_cell.append(this.celltoolbar.element);
         var input_area = $('<div/>').addClass('input_area');
-        this.code_mirror = new CodeMirror(input_area.get(0), this.cm_config);
+        this.code_mirror = new CodeMirror(input_area.get(0), this.class_config.get_sync('cm_config'));
+        // In case of bugs that put the keyboard manager into an inconsistent state,
+        // ensure KM is enabled when CodeMirror is focused:
+        this.code_mirror.on('focus', function () {
+            if (that.keyboard_manager) {
+                that.keyboard_manager.enable();
+            }
+        });
         this.code_mirror.on('keydown', $.proxy(this.handle_keyevent,this));
         $(this.code_mirror.getInputField()).attr("spellcheck", "false");
         inner_cell.append(input_area);
@@ -353,6 +329,7 @@ define([
             // If we closed the tooltip, don't let CM or the global handlers
             // handle this event.
             event.codemirrorIgnore = true;
+            event._ipkmIgnore = true;
             event.preventDefault();
             return true;
         } else if (event.keyCode === keycodes.tab && event.type === 'keydown' && event.shiftKey) {
@@ -363,6 +340,12 @@ define([
                         return false;
                     }
                 }
+                var pre_cursor = editor.getRange({line:cur.line,ch:0},cur);
+                if (pre_cursor.trim() === "") {
+                    // Don't show tooltip if the part of the line before the cursor
+                    // is empty.  In this case, let CodeMirror handle indentation.
+                    return false;
+                } 
                 this.tooltip.request(that);
                 event.codemirrorIgnore = true;
                 event.preventDefault();
@@ -403,14 +386,18 @@ define([
      * Execute current code cell to the kernel
      * @method execute
      */
-    CodeCell.prototype.execute = function () {
+    CodeCell.prototype.execute = function (stop_on_error) {
         if (!this.kernel || !this.kernel.is_connected()) {
             console.log("Can't execute, kernel is not connected.");
             return;
         }
 
-        this.active_output_area.clear_output(false, true);
-        
+        this.output_area.clear_output(false, true);
+
+        if (stop_on_error === undefined) {
+            stop_on_error = true;
+        }
+
         // Clear widget area
         for (var i = 0; i < this.widget_views.length; i++) {
             var view = this.widget_views[i];
@@ -425,19 +412,26 @@ define([
         this.widget_subarea.height('');
         this.widget_area.height('');
         this.widget_area.hide();
-
-        this.set_input_prompt('*');
-        this.element.addClass("running");
-        if (this.last_msg_id) {
-            this.kernel.clear_callbacks_for_msg(this.last_msg_id);
-        }
-        var callbacks = this.get_callbacks();
         
         var old_msg_id = this.last_msg_id;
-        this.last_msg_id = this.kernel.execute(this.get_text(), callbacks, {silent: false, store_history: true});
+
         if (old_msg_id) {
-            delete CodeCell.msg_cells[old_msg_id];
+            this.kernel.clear_callbacks_for_msg(old_msg_id);
+            if (old_msg_id) {
+                delete CodeCell.msg_cells[old_msg_id];
+            }
         }
+        if (this.get_text().trim().length === 0) {
+            // nothing to do
+            this.set_input_prompt(null);
+            return;
+        }
+        this.set_input_prompt('*');
+        this.element.addClass("running");
+        var callbacks = this.get_callbacks();
+        
+        this.last_msg_id = this.kernel.execute(this.get_text(), callbacks, {silent: false, store_history: true,
+            stop_on_error : stop_on_error});
         CodeCell.msg_cells[this.last_msg_id] = this;
         this.render();
         this.events.trigger('execute.CodeCell', {cell: this});
@@ -459,10 +453,10 @@ define([
             },
             iopub : {
                 output : function() { 
-                    that.active_output_area.handle_output.apply(that.active_output_area, arguments);
+                    that.output_area.handle_output.apply(that.output_area, arguments);
                 }, 
                 clear_output : function() { 
-                    that.active_output_area.handle_clear_output.apply(that.active_output_area, arguments);
+                    that.output_area.handle_clear_output.apply(that.output_area, arguments);
                 }, 
             },
             input : $.proxy(this._handle_input_request, this)
@@ -497,7 +491,7 @@ define([
      * @private
      */
     CodeCell.prototype._handle_input_request = function (msg) {
-        this.active_output_area.append_raw_input(msg);
+        this.output_area.append_raw_input(msg);
     };
 
 
@@ -600,7 +594,7 @@ define([
 
 
     CodeCell.prototype.clear_output = function (wait) {
-        this.active_output_area.clear_output(wait);
+        this.output_area.clear_output(wait);
         this.set_input_prompt();
     };
 
@@ -619,14 +613,7 @@ define([
             }
             this.set_input_prompt(data.execution_count);
             this.output_area.trusted = data.metadata.trusted || false;
-            this.output_area.fromJSON(data.outputs);
-            if (data.metadata.collapsed !== undefined) {
-                if (data.metadata.collapsed) {
-                    this.collapse_output();
-                } else {
-                    this.expand_output();
-                }
-            }
+            this.output_area.fromJSON(data.outputs, data.metadata);
         }
     };
 
@@ -644,6 +631,11 @@ define([
         data.outputs = outputs;
         data.metadata.trusted = this.output_area.trusted;
         data.metadata.collapsed = this.output_area.collapsed;
+        if (this.output_area.scroll_state === 'auto') {
+            delete data.metadata.scrolled;
+        } else {
+            data.metadata.scrolled = this.output_area.scroll_state;
+        }
         return data;
     };
 
