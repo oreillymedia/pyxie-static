@@ -37,15 +37,18 @@ function($, utils) {
     
     ConfigSection.prototype.load = function() {
         var that = this;
-        return utils.promising_ajax(this.api_url(), {
-            cache: false,
-            type: "GET",
-            dataType: "json",
-        }).then(function(data) {
-            that.data = data;
-            that._load_done();
-            return data;
-        });
+        that.data = {};
+        that._load_done();
+        return {};
+        // return utils.promising_ajax(this.api_url(), {
+        //     cache: false,
+        //     type: "GET",
+        //     dataType: "json",
+        // }).then(function(data) {
+        //     that.data = data;
+        //     that._load_done();
+        //     return data;
+        // });
     };
     
     /**

@@ -55,13 +55,19 @@ require([
     // compat with old IPython, remove for IPython > 3.0
     window.CodeMirror = CodeMirror;
 
+    // added by zach
+
     var common_options = {
-        ws_url : utils.get_body_data("wsUrl"),
-        base_url : utils.get_body_data("baseUrl"),
-        notebook_path : utils.get_body_data("notebookPath"),
-        notebook_name : utils.get_body_data('notebookName')
+        ws_url : '', //utils.get_body_data("wsUrl"),
+        base_url : "http://192.168.59.103:8000/", //utils.get_body_data("baseUrl"),
+        notebook_path : '',//utils.get_body_data("notebookPath"),
+        notebook_name : ''//utils.get_body_data('notebookName')
     };
 
+    console.log(common_options);
+
+
+    // console.log('baseurl', utils.get_body_data("baseUrl"));
     var config_section = new configmod.ConfigSection('notebook', common_options);
     config_section.load();
     var common_config = new configmod.ConfigSection('common', common_options);
@@ -88,6 +94,43 @@ require([
         contents: contents,
         config: config_section},
         common_options));
+
+    // HERE
+    // $('#notebook p, #notebook pre').addClass('cell');
+    // notebook.container.prepend($('#notebook p, #notebook pre'));
+
+    notebook.writable = false
+    notebook.notebook_name = 'testytest'
+
+    $('#notebook p, #notebook pre').each(function(i, e){
+        // var text = $(e).text();
+        var text = $(e).html();
+        var name = $(e).prop('tagName');
+        $(e).remove();
+        var type = 'markdown'; // raw
+        if (name === 'PRE'){
+            type = 'code';
+        }
+        console.log(type);
+            
+        notebook.insert_cell_at_bottom(type);
+        notebook.get_cell(i).set_text(text);
+        // console.log($(e).text());
+    });
+
+    notebook.ws_url = 'ws://192.168.59.103:8000'
+
+    // that.kernel = new kernel.Kernel(kernel_service_url, that.ws_url, that.notebook, that.kernel_model.name);
+
+    // kernel_id = "6c0aecff-bc48-407c-ac79-7c879d55fe08"
+    // k.kernel_id = "8a5f07cc-d8e2-496c-b4af-6ed55afc939e"
+    // k.kernel_url = "/api/kernels/" + k.kernel_id
+
+    notebook.start_session();// 'python3'
+    // first, load them all, then notebook.insert_cell_at_index, and set_text
+
+
+
     var login_widget = new loginwidget.LoginWidget('span#login_widget', common_options);
     var toolbar = new maintoolbar.MainToolBar('#maintoolbar-container', {
         notebook: notebook, 
@@ -135,7 +178,7 @@ require([
             document.location.hash = '';
             document.location.hash = hash;
         }
-        notebook.set_autosave_interval(notebook.minimum_autosave_interval);
+        // notebook.set_autosave_interval(notebook.minimum_autosave_interval);
         // only do this once
         events.off('notebook_loaded.Notebook', first_load);
     };
@@ -157,6 +200,9 @@ require([
     events.trigger('app_initialized.NotebookApp');
     utils.load_extensions_from_config(config_section);
     utils.load_extensions_from_config(common_config);
+
+    window.n = notebook
+
     // notebook.load_notebook(common_options.notebook_path);
 
 });

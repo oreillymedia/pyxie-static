@@ -359,7 +359,8 @@ define([
                 that.id = data.id;
                 that.name = data.name;
             }
-            that.kernel_url = utils.url_join_encode(that.kernel_service_url, that.id);
+            that.kernel_url = that.kernel_service_url+that.id;
+            // that.kernel_url = utils.url_join_encode(that.kernel_service_url, that.id);
             if (success) {
                 success(data, status, xhr);
             }
@@ -432,13 +433,20 @@ define([
          */
         var that = this;
         this.stop_channels();
-        var ws_host_url = this.ws_url + this.kernel_url;
+        console.log('kernel_url:', this.kernel_url);
+        console.log('ws_url:', this.ws_url);
+        var ws_host_url = this.kernel_url.replace('http', 'ws');
+        // var ws_host_url = this.ws_url + this.kernel_url;
 
         console.log("Starting WebSockets:", ws_host_url);
-        
+        console.log('%cWS URL:', 'color: green; font-weight: bold;');
+        var ws_url = [utils.url_join_encode(that.kernel_url.replace('http','ws'), 'channels'),
+                "?session_id=" + that.session_id].join('');
+        console.log(ws_url);
+
         this.ws = new this.WebSocket([
-                that.ws_url,
-                utils.url_join_encode(that.kernel_url, 'channels'),
+                // that.ws_url,
+                utils.url_join_encode(that.kernel_url.replace('http','zzzws'), 'channels'),
                 "?session_id=" + that.session_id
             ].join('')
         );

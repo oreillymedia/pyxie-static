@@ -443,7 +443,8 @@ define([
          * encode just the components of a multi-segment uri,
          * leaving '/' separators
          */
-        return uri.split('/').map(encodeURIComponent).join('/');
+        return uri;
+        // return uri.split('/').map(encodeURIComponent).join('/');
     };
     
     var url_join_encode = function () {

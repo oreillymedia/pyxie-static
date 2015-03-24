@@ -36,7 +36,8 @@ define([
 
         this.base_url = options.base_url;
         this.ws_url = options.ws_url;
-        this.session_service_url = utils.url_join_encode(this.base_url, 'api/sessions');
+        // this.session_service_url = utils.url_join_encode(this.base_url, 'api/sessions');
+        this.session_service_url = this.base_url+'api/sessions';
         this.session_url = null;
 
         this.notebook = options.notebook;
